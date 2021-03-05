@@ -354,4 +354,19 @@ impl_runtime_apis! {
 			Grandpa::grandpa_authorities()
 		}
 	}
+	impl sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block> for Runtime {
+		fn validate_transaction(tx: <Block as Block<T>>::Extrinsic) -> TransactionValidity{
+			if let Some(&utxo::Call::spend(ref transaction)) = IsSubType::<Utxo,Runtime>::is_sub_type(&tx.function){
+				match Utxo::validate_transaction(&transaction){
+					Err()=>{
+						sp_runtime::print(e);
+						return Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(1)));
+					}
+					Ok(vt) =>{
+						return Ok(vt);
+					}
+				}
+			}
+		}
+	}
 }
